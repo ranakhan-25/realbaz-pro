@@ -1,0 +1,18 @@
+{
+  "nav": {
+    "home": "Home",
+    "features": "Features",
+    "pricing": "Pricing",
+    "about": "About",
+    "contact": "Contact",
+    "login": "Login"
+  },
+  "language": {
+    "english": "English",
+    "bangla": "বাংলা"
+  },
+  "theme": {
+    "light": "Light",
+    "dark": "Dark"
+  }
+}
