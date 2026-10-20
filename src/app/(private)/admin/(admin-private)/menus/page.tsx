@@ -1,870 +1,306 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable prettier/prettier */
 "use client";
 
-import React, { useCallback, useMemo, useState } from "react";
-import {
-  Button,
-  Card,
-  Col,
-  Empty,
-  Form,
-  Input,
-  Popconfirm,
-  Row,
-  Select,
-  Space,
-  Spin,
-  Switch,
-  Tooltip,
-  Tree,
-  Typography,
-  message,
-} from "antd";
-
-import type { DataNode, TreeProps } from "antd/es/tree";
-import {
-  DeleteOutlined,
-  DownOutlined,
-  EditOutlined,
-  PlusOutlined,
-  ReloadOutlined,
-  SaveOutlined,
-} from "@ant-design/icons";
-
-import type { MenuTreeNode } from "@/types/interface/menuServices";
-import { generateSlug } from "@/lib/generateSlug";
+import { useState, useEffect } from "react";
+import MenuItemModal from "./components/MenuItemModal";
 import { useTheme } from "@/lib/theme";
+import {
+  GripVertical,
+  Edit3,
+  Trash2,
+  Plus,
+  CornerDownRight,
+  Layers,
+  Search,
+} from "lucide-react";
 
-const { Text } = Typography;
-
-const BORDER_COLOR = "#e5e7eb";
-
-const STATIC_MODULE_ID = 1;
-const STATIC_MODULE_NAME = "HRMS";
-
-/* =========================================================
-   STATIC MENU DATA
-========================================================= */
-
-const STATIC_MENU_TREE: MenuTreeNode[] = [
+// ডামি ডেটা
+const DUMMY_MENUS = [
   {
-    id: 1,
-    title: "Dashboard",
-    url: "/dashboard",
-    target: "_self",
-    moduleId: STATIC_MODULE_ID,
-    parentId: null,
-    order: 1,
-    isVisible: true,
-    isPublic: false,
-    children: [],
-    location: "SIDEBAR",
+    id: "1",
+    title: "Home",
+    url: "/",
+    icon: "Home",
+    order_no: 1,
+    parent_id: null,
+    is_active: true,
   },
   {
-    id: 2,
-    title: "Users",
-    url: "/users",
-    target: "_self",
-    moduleId: STATIC_MODULE_ID,
-    parentId: null,
-    order: 2,
-    isVisible: true,
-    isPublic: false,
-    children: [
-      {
-        id: 3,
-        title: "All Users",
-        url: "/users",
-        target: "_self",
-        moduleId: STATIC_MODULE_ID,
-        parentId: 2,
-        order: 1,
-        isVisible: true,
-        isPublic: false,
-        children: [],
-        location: "SIDEBAR",
-      },
-      {
-        id: 4,
-        title: "Roles",
-        url: "/roles",
-        target: "_self",
-        moduleId: STATIC_MODULE_ID,
-        parentId: 2,
-        order: 2,
-        isVisible: true,
-        isPublic: false,
-        children: [],
-        location: "SIDEBAR",
-      },
-    ],
-    location: "SIDEBAR",
+    id: "2",
+    title: "About Us",
+    url: "/about",
+    icon: "Info",
+    order_no: 2,
+    parent_id: null,
+    is_active: true,
   },
   {
-    id: 5,
-    title: "Features",
-    url: "/features",
-    target: "_self",
-    moduleId: STATIC_MODULE_ID,
-    parentId: null,
-    order: 3,
-    isVisible: true,
-    isPublic: false,
-    children: [],
-    location: "SIDEBAR",
+    id: "3",
+    title: "Services",
+    url: "/services",
+    icon: "Briefcase",
+    order_no: 3,
+    parent_id: null,
+    is_active: true,
   },
   {
-    id: 6,
-    title: "Menu Management",
-    url: "/menu-management",
-    target: "_self",
-    moduleId: STATIC_MODULE_ID,
-    parentId: null,
-    order: 4,
-    isVisible: true,
-    isPublic: false,
-    children: [],
-    location: "SIDEBAR",
+    id: "4",
+    title: "Web Development",
+    url: "/services/web",
+    icon: "Code",
+    order_no: 1,
+    parent_id: "3",
+    is_active: true,
+  },
+  {
+    id: "5",
+    title: "Contact",
+    url: "/contact",
+    icon: "Phone",
+    order_no: 4,
+    parent_id: null,
+    is_active: false,
   },
 ];
 
-/* =========================================================
-   HELPERS
-========================================================= */
-
-function cloneTree(nodes: MenuTreeNode[]): MenuTreeNode[] {
-  return nodes.map((node) => ({
-    ...node,
-    children: node.children?.length ? cloneTree(node.children) : [],
-  }));
-}
-
-function flattenTree(nodes: MenuTreeNode[]): MenuTreeNode[] {
-  const result: MenuTreeNode[] = [];
-
-  nodes.forEach((node) => {
-    result.push(node);
-    if (node.children?.length) {
-      result.push(...flattenTree(node.children));
-    }
-  });
-
-  return result;
-}
-
-function findNode(nodes: MenuTreeNode[], id: number): MenuTreeNode | undefined {
-  for (const node of nodes) {
-    if (Number(node.id) === Number(id)) return node;
-    if (node.children?.length) {
-      const found = findNode(node.children, id);
-      if (found) return found;
-    }
-  }
-  return undefined;
-}
-
-function getAllTreeKeys(nodes: MenuTreeNode[]): React.Key[] {
-  const keys: React.Key[] = [];
-  nodes.forEach((node) => {
-    keys.push(node.id);
-    if (node.children?.length) {
-      keys.push(...getAllTreeKeys(node.children));
-    }
-  });
-  return keys;
-}
-
-function containsNode(nodes: MenuTreeNode[], targetId: number): boolean {
-  return Boolean(findNode(nodes, targetId));
-}
-
-function removeNode(
-  nodes: MenuTreeNode[],
-  targetId: number,
-): {
-  nodes: MenuTreeNode[];
-  removedNode?: MenuTreeNode;
-} {
-  let removedNode: MenuTreeNode | undefined;
-  const nextNodes: MenuTreeNode[] = [];
-
-  for (const node of nodes) {
-    if (Number(node.id) === Number(targetId)) {
-      removedNode = node;
-      continue;
-    }
-
-    let nextNode = node;
-    if (node.children?.length) {
-      const result = removeNode(node.children, targetId);
-      if (result.removedNode) removedNode = result.removedNode;
-      nextNode = { ...node, children: result.nodes };
-    }
-    nextNodes.push(nextNode);
-  }
-
-  return { nodes: nextNodes, removedNode };
-}
-
-function normalizeParentIds(
-  nodes: MenuTreeNode[],
-  parentId: number | null = null,
-): MenuTreeNode[] {
-  return nodes.map((node, index) => ({
-    ...node,
-    parentId,
-    order: index + 1,
-    children: node.children?.length
-      ? normalizeParentIds(node.children, Number(node.id))
-      : [],
-  }));
-}
-
-function getNextMenuId(nodes: MenuTreeNode[]): number {
-  const allNodes = flattenTree(nodes);
-  if (!allNodes.length) return 1;
-  return Math.max(...allNodes.map((node) => Number(node.id))) + 1;
-}
-
-function updateNodeInTree(
-  nodes: MenuTreeNode[],
-  targetId: number,
-  updater: (node: MenuTreeNode) => MenuTreeNode,
-): MenuTreeNode[] {
-  return nodes.map((node) => {
-    if (Number(node.id) === Number(targetId)) return updater(node);
-    return {
-      ...node,
-      children: node.children?.length
-        ? updateNodeInTree(node.children, targetId, updater)
-        : [],
-    };
-  });
-}
-
-function findNodeContext(
-  nodes: MenuTreeNode[],
-  targetId: number,
-  parentId: number | null = null,
-): { node: MenuTreeNode; parentId: number | null } | null {
-  for (const node of nodes) {
-    if (Number(node.id) === Number(targetId)) {
-      return { node, parentId };
-    }
-    if (node.children?.length) {
-      const result = findNodeContext(node.children, targetId, Number(node.id));
-      if (result) return result;
-    }
-  }
-  return null;
-}
-
-/* =========================================================
-   FORM TYPE
-========================================================= */
-
-interface MenuFormValues {
-  title: string;
-  url: string;
-  target: "_self" | "_blank";
-  elementClass?: string;
-  elementId?: string;
-  icon?: string;
-  description?: string;
-  parentId?: number | null;
-  moduleId?: number;
-  isVisible: boolean;
-  isPublic: boolean;
-}
-
-/* =========================================================
-   PAGE
-========================================================= */
-
 export default function MenuManagementPage() {
-  const [form] = Form.useForm<MenuFormValues>();
+  const [menus, setMenus] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isUsingDummy, setIsUsingDummy] = useState(false);
+
   const { primaryColor } = useTheme();
+  const brandColor = primaryColor || "#2ed573";
 
-  const [treeNodes, setTreeNodes] = useState<MenuTreeNode[]>(
-    cloneTree(STATIC_MENU_TREE),
-  );
-  const [selectedMenuId, setSelectedMenuId] = useState<number | undefined>();
-  const [editingMenu, setEditingMenu] = useState<MenuTreeNode | null>(null);
-  const [expandedKeys, setExpandedKeys] = useState<React.Key[]>(
-    getAllTreeKeys(STATIC_MENU_TREE),
-  );
-  const [isDragging, setIsDragging] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
+  // Modal States
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedMenu, setSelectedMenu] = useState<any>(null);
+  const [defaultParentId, setDefaultParentId] = useState<string | null>(null);
 
-  const selectedMenu = useMemo(() => {
-    if (!selectedMenuId) return undefined;
-    return findNode(treeNodes, selectedMenuId);
-  }, [treeNodes, selectedMenuId]);
-
-  const moduleOptions = useMemo(
-    () => [{ label: STATIC_MODULE_NAME, value: STATIC_MODULE_ID }],
-    [],
-  );
-
-  const parentOptions = useMemo(() => {
-    const allNodes = flattenTree(treeNodes);
-    return [
-      { label: "Root", value: null },
-      ...allNodes
-        .filter((node) => Number(node.id) !== Number(selectedMenuId))
-        .map((node) => ({
-          label: node.title,
-          value: Number(node.id),
-        })),
-    ];
-  }, [treeNodes, selectedMenuId]);
-
-  const treeData = useMemo<DataNode[]>(() => {
-    const convert = (nodes: MenuTreeNode[]): DataNode[] =>
-      nodes.map((node) => ({
-        key: node.id,
-        title: (
-          <div className="flex w-full items-center justify-between gap-3 py-1">
-            <div className="flex min-w-0 items-center gap-2">
-              <span
-                className={
-                  node.isVisible
-                    ? "font-medium text-foreground"
-                    : "font-medium text-muted-foreground line-through"
-                }
-              >
-                {node.title}
-              </span>
-              {node.url ? (
-                <span className="truncate text-xs text-muted-foreground">
-                  {node.url}
-                </span>
-              ) : null}
-            </div>
-            <span className="shrink-0 text-xs text-muted-foreground">
-              #{node.order}
-            </span>
-          </div>
-        ),
-        children: node.children?.length ? convert(node.children) : undefined,
-      }));
-
-    return convert(treeNodes);
-  }, [treeNodes]);
-
-  const handleSelect: TreeProps["onSelect"] = (keys) => {
-    const id = Number(keys[0]);
-    if (!id) return;
-
-    const node = findNode(treeNodes, id);
-    if (!node) return;
-
-    setSelectedMenuId(id);
-    setEditingMenu(node);
-
-    form.setFieldsValue({
-      title: node.title,
-      url: node.url ?? "",
-      target: node.target === "_blank" ? "_blank" : "_self",
-      elementClass: node.elementClass ?? "",
-      elementId: node.elementId ?? "",
-      icon: node.icon ?? "",
-      description: node.description ?? "",
-      parentId: node.parentId ?? null,
-      moduleId: node.moduleId ?? STATIC_MODULE_ID,
-      isVisible: node.isVisible ?? true,
-      isPublic: node.isPublic ?? false,
-    });
-  };
-
-  const handleCreate = useCallback(() => {
-    setSelectedMenuId(undefined);
-    setEditingMenu(null);
-    form.resetFields();
-    form.setFieldsValue({
-      title: "",
-      url: "",
-      target: "_self",
-      elementClass: "",
-      elementId: "",
-      icon: "",
-      description: "",
-      parentId: null,
-      moduleId: STATIC_MODULE_ID,
-      isVisible: true,
-      isPublic: false,
-    });
-  }, [form]);
-
-  const handleEdit = useCallback(
-    (node: MenuTreeNode) => {
-      setSelectedMenuId(Number(node.id));
-      setEditingMenu(node);
-      form.setFieldsValue({
-        title: node.title,
-        url: node.url ?? "",
-        target: node.target === "_blank" ? "_blank" : "_self",
-        elementClass: node.elementClass ?? "",
-        elementId: node.elementId ?? "",
-        icon: node.icon ?? "",
-        description: node.description ?? "",
-        parentId: node.parentId ?? null,
-        moduleId: node.moduleId ?? STATIC_MODULE_ID,
-        isVisible: node.isVisible ?? true,
-        isPublic: node.isPublic ?? false,
-      });
-    },
-    [form],
-  );
-
-  const handleDelete = useCallback(
-    (id: number) => {
-      const result = removeNode(treeNodes, id);
-      const normalizedTree = normalizeParentIds(result.nodes);
-      setTreeNodes(normalizedTree);
-
-      if (Number(selectedMenuId) === Number(id)) {
-        setSelectedMenuId(undefined);
-        setEditingMenu(null);
-        form.resetFields();
-      }
-
-      message.success("Menu deleted successfully.");
-    },
-    [treeNodes, selectedMenuId, form],
-  );
-
-  const handleSave = async () => {
+  // ডেটা ফেচ
+  const fetchMenus = async () => {
+    setIsLoading(true);
     try {
-      const values = await form.validateFields();
-      setIsSaving(true);
-
-      const title = values.title.trim();
-      const url = values.url?.trim() || generateSlug(title);
-
-      if (editingMenu) {
-        const updatedTree = updateNodeInTree(
-          treeNodes,
-          Number(editingMenu.id),
-          (node) => ({
-            ...node,
-            title,
-            url,
-            target: values.target,
-            elementClass: values.elementClass?.trim() || "",
-            elementId: values.elementId?.trim() || "",
-            icon: values.icon?.trim() || "",
-            description: values.description?.trim() || "",
-            moduleId: values.moduleId ?? STATIC_MODULE_ID,
-            isVisible: values.isVisible,
-            isPublic: values.isPublic,
-          }),
-        );
-
-        const normalizedTree = normalizeParentIds(updatedTree);
-        setTreeNodes(normalizedTree);
-
-        const updatedNode = findNode(normalizedTree, Number(editingMenu.id));
-        if (updatedNode) setEditingMenu(updatedNode);
-
-        message.success("Menu updated successfully.");
+      const res = await fetch("/api/menus");
+      if (!res.ok) throw new Error("API Error");
+      const data = await res.json();
+      if (!data || data.length === 0) {
+        setMenus(DUMMY_MENUS);
+        setIsUsingDummy(true);
       } else {
-        const newId = getNextMenuId(treeNodes);
-        const parentId = values.parentId ? Number(values.parentId) : null;
-
-        const newMenu: MenuTreeNode = {
-          id: newId,
-          title,
-          url,
-          target: values.target,
-          moduleId: values.moduleId ?? STATIC_MODULE_ID,
-          parentId,
-          order: 0,
-          isVisible: values.isVisible,
-          isPublic: values.isPublic,
-          elementClass: values.elementClass?.trim() || "",
-          elementId: values.elementId?.trim() || "",
-          icon: values.icon?.trim() || "",
-          description: values.description?.trim() || "",
-          children: [],
-          location: "SIDEBAR",
-        };
-
-        let nextTree: MenuTreeNode[];
-
-        if (parentId) {
-          nextTree = updateNodeInTree(treeNodes, parentId, (node) => ({
-            ...node,
-            children: [...(node.children ?? []), newMenu],
-          }));
-        } else {
-          nextTree = [...treeNodes, newMenu];
-        }
-
-        const normalizedTree = normalizeParentIds(nextTree);
-        setTreeNodes(normalizedTree);
-        setSelectedMenuId(newId);
-
-        const createdNode = findNode(normalizedTree, newId);
-        setEditingMenu(createdNode ?? null);
-
-        message.success("Menu created successfully.");
+        setMenus(data);
+        setIsUsingDummy(false);
       }
-    } catch {
-      message.error("Please check the form fields.");
+    } catch (error) {
+      setMenus(DUMMY_MENUS);
+      setIsUsingDummy(true);
     } finally {
-      setIsSaving(false);
+      setIsLoading(false);
     }
   };
 
-  const handleReset = () => {
-    const freshTree = cloneTree(STATIC_MENU_TREE);
-    setTreeNodes(freshTree);
-    setSelectedMenuId(undefined);
-    setEditingMenu(null);
-    setExpandedKeys(getAllTreeKeys(freshTree));
-    form.resetFields();
-    message.success("Static menu reset successfully.");
-  };
+  useEffect(() => {
+    fetchMenus();
+  }, []);
 
-  const handleRefresh = () => {
-    const freshTree = cloneTree(STATIC_MENU_TREE);
-    setTreeNodes(freshTree);
-    setExpandedKeys(getAllTreeKeys(freshTree));
-    setSelectedMenuId(undefined);
-    setEditingMenu(null);
-    form.resetFields();
-    message.success("Menu refreshed.");
-  };
+  const handleSave = async (payload: any) => {
+    const isEdit = !!payload.id;
+    const method = isEdit ? "PUT" : "POST";
+    const url = isEdit ? `/api/menus/${payload.id}` : "/api/menus";
 
-  const handleDrop: TreeProps["onDrop"] = (info) => {
-    const dragKey = Number(info.dragNode.key);
-    const dropKey = Number(info.node.key);
-
-    if (dragKey === dropKey) return;
-
-    const draggedOriginal = findNode(treeNodes, dragKey);
-    if (!draggedOriginal) return;
-
-    if (containsNode(draggedOriginal.children ?? [], dropKey)) {
-      message.warning("A menu cannot be moved inside its own child.");
-      return;
-    }
-
-    const result = removeNode(treeNodes, dragKey);
-    const draggedNode = result.removedNode;
-    if (!draggedNode) return;
-
-    let nextTree = result.nodes;
-
-    if (info.dropToGap) {
-      const context = findNodeContext(nextTree, dropKey);
-      if (!context) return;
-
-      const parentId = context.parentId;
-
-      if (parentId === null) {
-        const dropIndex = nextTree.findIndex(
-          (node) => Number(node.id) === Number(dropKey),
+    try {
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error("Save failed");
+      const savedMenu = await res.json();
+      if (isEdit)
+        setMenus((prev) =>
+          prev.map((m) => (m.id === savedMenu.id ? savedMenu : m)),
         );
-        if (dropIndex !== -1) {
-          nextTree.splice(dropIndex + 1, 0, {
-            ...draggedNode,
-            parentId: null,
-          });
-        }
-      } else {
-        nextTree = updateNodeInTree(nextTree, parentId, (node) => {
-          const children = [...(node.children ?? [])];
-          const dropIndex = children.findIndex(
-            (child) => Number(child.id) === Number(dropKey),
-          );
-          if (dropIndex === -1) return node;
-
-          children.splice(dropIndex + 1, 0, {
-            ...draggedNode,
-            parentId: Number(parentId),
-          });
-
-          return { ...node, children };
-        });
-      }
-    } else {
-      nextTree = updateNodeInTree(nextTree, dropKey, (node) => ({
-        ...node,
-        children: [
-          ...(node.children ?? []),
-          { ...draggedNode, parentId: Number(dropKey) },
-        ],
-      }));
+      else setMenus((prev) => [...prev, savedMenu]);
+    } catch (error) {
+      if (isEdit)
+        setMenus((prev) =>
+          prev.map((m) => (m.id === payload.id ? { ...m, ...payload } : m)),
+        );
+      else
+        setMenus((prev) => [
+          ...prev,
+          { ...payload, id: Date.now().toString(), order_no: menus.length + 1 },
+        ]);
     }
+  };
 
-    const normalizedTree = normalizeParentIds(nextTree);
-    setTreeNodes(normalizedTree);
-    setIsDragging(false);
-    message.success("Menu order updated.");
+  const handleDelete = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this menu item?")) return;
+    try {
+      await fetch(`/api/menus/${id}`, { method: "DELETE" });
+      setMenus((prev) => prev.filter((m) => m.id !== id && m.parent_id !== id));
+    } catch (error) {
+      setMenus((prev) => prev.filter((m) => m.id !== id && m.parent_id !== id));
+    }
+  };
+
+  const handleEdit = (menu: any) => {
+    setSelectedMenu(menu);
+    setDefaultParentId(menu.parent_id);
+    setIsModalOpen(true);
+  };
+
+  const handleCreate = (parentId: string | null = null) => {
+    setSelectedMenu(null);
+    setDefaultParentId(parentId);
+    setIsModalOpen(true);
+  };
+
+  const renderMenuTree = (parentId: string | null = null, depth = 0) => {
+    return menus
+      .filter((m) => m.parent_id === parentId)
+      .sort((a, b) => a.order_no - b.order_no)
+      .map((menu) => (
+        <div key={menu.id} className="group">
+          <div
+            className={`flex items-center justify-between py-3 px-4 border-b border-gray-100 hover:bg-gray-50/80 transition-all duration-200 ${depth > 0 ? "bg-gray-50/30" : ""}`}
+            style={{ paddingLeft: `${depth * 2 + 1}rem` }}
+          >
+            <div className="flex items-center space-x-3">
+              <GripVertical className="h-5 w-5 text-gray-300 group-hover:text-gray-500 cursor-grab transition-colors" />
+              {depth > 0 && (
+                <CornerDownRight className="h-4 w-4 text-gray-400" />
+              )}
+
+              <div className="flex flex-col">
+                <div className="flex items-center space-x-2">
+                  <span className="font-semibold text-gray-800 text-sm">
+                    {menu.title}
+                  </span>
+                  {!menu.is_active && (
+                    <span className="bg-red-50 text-red-600 text-[10px] px-2 py-0.5 rounded-full uppercase font-bold tracking-wider border border-red-100">
+                      Hidden
+                    </span>
+                  )}
+                </div>
+                <span className="text-xs text-gray-400 font-mono mt-0.5">
+                  {menu.url}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center space-x-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+              <button
+                onClick={() => handleCreate(menu.id)}
+                className="p-1.5 text-xs font-medium rounded-md hover:bg-white hover:shadow-sm border border-transparent hover:border-gray-200 transition-all text-gray-500 hover:text-gray-800"
+                title="Add Sub-menu"
+              >
+                <Plus className="h-3.5 w-3.5" />
+              </button>
+              <button
+                onClick={() => handleEdit(menu)}
+                className="p-1.5 rounded-md hover:bg-white hover:shadow-sm border border-transparent hover:border-gray-200 transition-all text-blue-500"
+              >
+                <Edit3 className="h-4 w-4" />
+              </button>
+              <button
+                onClick={() => handleDelete(menu.id)}
+                className="p-1.5 rounded-md hover:bg-white hover:shadow-sm border border-transparent hover:border-gray-200 transition-all text-red-500"
+              >
+                <Trash2 className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+          {renderMenuTree(menu.id, depth + 1)}
+        </div>
+      ));
   };
 
   return (
-    <div className="min-h-screen bg-background p-4 md:p-6">
-      <div className="mx-auto max-w-[1600px]">
-        {/* HEADER */}
-        <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+    <div className="min-h-screen bg-[#fafafa] p-6 md:p-10 font-sans">
+      <div className="max-w-5xl mx-auto">
+        {/* Header Section */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-foreground">
-              Menu Management
+            <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight flex items-center gap-2">
+              <Layers className="h-7 w-7" style={{ color: brandColor }} />
+              Navigation Menus
             </h1>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Manage your static sidebar menu structure.
+            <p className="text-sm text-gray-500 mt-1">
+              Manage your website's structure, drag to reorder, and organize
+              sub-menus.
             </p>
           </div>
 
-          <Space wrap>
-            <Button icon={<ReloadOutlined />} onClick={handleRefresh}>
-              Refresh
-            </Button>
-
-            <Button onClick={handleReset}>Reset</Button>
-
-            <Button
-              type="primary"
-              icon={<PlusOutlined />}
-              onClick={handleCreate}
-              style={{
-                backgroundColor: primaryColor,
-                borderColor: primaryColor,
-              }}
+          <div className="flex items-center gap-3 w-full md:w-auto">
+            <div className="relative w-full md:w-64">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search menus..."
+                className="w-full pl-9 pr-4 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-opacity-20 transition-all shadow-sm"
+                style={{ "--tw-ring-color": brandColor } as any}
+              />
+            </div>
+            <button
+              onClick={() => handleCreate(null)}
+              className="px-4 py-2 rounded-lg text-white font-medium text-sm flex items-center gap-2 shadow-md hover:shadow-lg transition-all hover:-translate-y-0.5 whitespace-nowrap"
+              style={{ backgroundColor: brandColor }}
             >
-              Add Menu
-            </Button>
-          </Space>
-        </div>
-
-        {/* CONTENT */}
-        <Row gutter={[16, 16]}>
-          {/* LEFT SIDE */}
-          <Col xs={24} lg={10} xl={9}>
-            <Card
-              title={
-                <div className="flex items-center justify-between">
-                  <span>Menu Structure</span>
-                  <Text type="secondary">
-                    {flattenTree(treeNodes).length} items
-                  </Text>
-                </div>
-              }
-              styles={{ body: { padding: 12 } }}
-              style={{ borderColor: BORDER_COLOR }}
-            >
-              {treeNodes.length > 0 ? (
-                <Tree
-                  blockNode
-                  draggable
-                  showLine
-                  switcherIcon={<DownOutlined />}
-                  selectedKeys={selectedMenuId ? [selectedMenuId] : []}
-                  expandedKeys={expandedKeys}
-                  treeData={treeData}
-                  onSelect={handleSelect}
-                  onExpand={(keys) => setExpandedKeys(keys)}
-                  onDragStart={() => setIsDragging(true)}
-                  onDragEnd={() => setIsDragging(false)}
-                  onDrop={handleDrop}
-                  className={isDragging ? "opacity-70" : ""}
-                />
-              ) : (
-                <Empty description="No menus found" />
-              )}
-            </Card>
-          </Col>
-
-          {/* RIGHT SIDE */}
-          <Col xs={24} lg={14} xl={15}>
-            <Card
-              title={
-                editingMenu
-                  ? `Edit Menu: ${editingMenu.title}`
-                  : "Create New Menu"
-              }
-              style={{ borderColor: BORDER_COLOR }}
-              extra={
-                editingMenu ? (
-                  <Space>
-                    <Tooltip title="Delete menu">
-                      <Popconfirm
-                        title="Delete this menu?"
-                        description="This action cannot be undone."
-                        okText="Delete"
-                        cancelText="Cancel"
-                        okButtonProps={{ danger: true }}
-                        onConfirm={() => handleDelete(Number(editingMenu.id))}
-                      >
-                        <Button danger icon={<DeleteOutlined />} />
-                      </Popconfirm>
-                    </Tooltip>
-                  </Space>
-                ) : null
-              }
-            >
-              <Form
-                form={form}
-                layout="vertical"
-                initialValues={{
-                  target: "_self",
-                  moduleId: STATIC_MODULE_ID,
-                  parentId: null,
-                  isVisible: true,
-                  isPublic: false,
-                }}
-              >
-                <Row gutter={[16, 0]}>
-                  <Col xs={24} md={12}>
-                    <Form.Item
-                      label="Menu Title"
-                      name="title"
-                      rules={[
-                        {
-                          required: true,
-                          message: "Please enter menu title.",
-                        },
-                      ]}
-                    >
-                      <Input
-                        placeholder="e.g. Users"
-                        onChange={(event) => {
-                          const title = event.target.value;
-                          if (!editingMenu && title.trim()) {
-                            form.setFieldValue("url", generateSlug(title));
-                          }
-                        }}
-                      />
-                    </Form.Item>
-                  </Col>
-
-                  <Col xs={24} md={12}>
-                    <Form.Item
-                      label="URL"
-                      name="url"
-                      rules={[
-                        {
-                          required: true,
-                          message: "Please enter URL.",
-                        },
-                      ]}
-                    >
-                      <Input placeholder="/users" />
-                    </Form.Item>
-                  </Col>
-
-                  <Col xs={24} md={12}>
-                    <Form.Item label="Parent Menu" name="parentId">
-                      <Select
-                        showSearch
-                        allowClear
-                        placeholder="Select parent"
-                        options={parentOptions}
-                        optionFilterProp="label"
-                      />
-                    </Form.Item>
-                  </Col>
-
-                  <Col xs={24} md={12}>
-                    <Form.Item label="Module" name="moduleId">
-                      <Select options={moduleOptions} />
-                    </Form.Item>
-                  </Col>
-
-                  <Col xs={24} md={12}>
-                    <Form.Item label="Target" name="target">
-                      <Select
-                        options={[
-                          { label: "Same Window", value: "_self" },
-                          { label: "New Window", value: "_blank" },
-                        ]}
-                      />
-                    </Form.Item>
-                  </Col>
-
-                  <Col xs={24} md={12}>
-                    <Form.Item label="Icon" name="icon">
-                      <Input placeholder="e.g. UserOutlined" />
-                    </Form.Item>
-                  </Col>
-
-                  <Col xs={24} md={12}>
-                    <Form.Item label="Element Class" name="elementClass">
-                      <Input placeholder="Optional CSS class" />
-                    </Form.Item>
-                  </Col>
-
-                  <Col xs={24} md={12}>
-                    <Form.Item label="Element ID" name="elementId">
-                      <Input placeholder="Optional element ID" />
-                    </Form.Item>
-                  </Col>
-
-                  <Col xs={24}>
-                    <Form.Item label="Description" name="description">
-                      <Input.TextArea rows={4} placeholder="Menu description" />
-                    </Form.Item>
-                  </Col>
-
-                  <Col xs={24} md={12}>
-                    <Form.Item
-                      label="Visible"
-                      name="isVisible"
-                      valuePropName="checked"
-                    >
-                      <Switch />
-                    </Form.Item>
-                  </Col>
-
-                  <Col xs={24} md={12}>
-                    <Form.Item
-                      label="Public"
-                      name="isPublic"
-                      valuePropName="checked"
-                    >
-                      <Switch />
-                    </Form.Item>
-                  </Col>
-                </Row>
-
-                {/* ACTIONS */}
-                <div className="mt-4 flex flex-wrap justify-end gap-2 border-t border-border pt-4">
-                  <Button onClick={handleCreate}>Clear</Button>
-
-                  <Button
-                    type="primary"
-                    icon={isSaving ? <Spin size="small" /> : <SaveOutlined />}
-                    loading={isSaving}
-                    onClick={handleSave}
-                    style={{
-                      backgroundColor: primaryColor,
-                      borderColor: primaryColor,
-                    }}
-                  >
-                    {editingMenu ? "Update Menu" : "Create Menu"}
-                  </Button>
-                </div>
-              </Form>
-            </Card>
-          </Col>
-        </Row>
-
-        {/* INFO */}
-        <div className="mt-4 rounded-xl border border-border bg-card p-4">
-          <div className="flex flex-col gap-1">
-            <span className="font-medium text-foreground">
-              Static Menu Mode
-            </span>
-            <span className="text-sm text-muted-foreground">
-              This page currently uses local static menu data. Create, edit,
-              delete and drag-and-drop changes are maintained locally during the
-              current session.
-            </span>
+              <Plus className="h-4 w-4" /> New Item
+            </button>
           </div>
         </div>
+
+        {isUsingDummy && (
+          <div className="bg-amber-50 border border-amber-200 text-amber-800 p-4 rounded-xl mb-6 text-sm flex items-center gap-3 shadow-sm">
+            <span className="flex h-2 w-2 rounded-full bg-amber-500 animate-pulse"></span>
+            <span>
+              API is currently offline. Showing <strong>Demo Data</strong> for
+              preview.
+            </span>
+          </div>
+        )}
+
+        {/* Main List Container */}
+        <div className="bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 overflow-hidden">
+          {isLoading ? (
+            <div className="p-12 flex flex-col items-center justify-center text-gray-400">
+              <div
+                className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mb-4"
+                style={{ borderColor: brandColor }}
+              ></div>
+              <p className="text-sm">Loading menus...</p>
+            </div>
+          ) : menus.length === 0 ? (
+            <div className="p-12 text-center text-gray-500 flex flex-col items-center">
+              <Layers className="h-12 w-12 text-gray-200 mb-4" />
+              <p className="text-lg font-medium text-gray-800">No menus yet</p>
+              <p className="text-sm text-gray-400 mb-6">
+                Create your first navigation item to get started.
+              </p>
+              <button
+                onClick={() => handleCreate(null)}
+                className="px-5 py-2.5 rounded-lg text-white font-medium shadow-sm"
+                style={{ backgroundColor: brandColor }}
+              >
+                + Create Menu
+              </button>
+            </div>
+          ) : (
+            <div className="flex flex-col">{renderMenuTree(null)}</div>
+          )}
+        </div>
       </div>
+
+      <MenuItemModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSave={handleSave}
+        menuData={selectedMenu}
+        defaultParentId={defaultParentId}
+        allMenus={menus}
+      />
     </div>
   );
 }

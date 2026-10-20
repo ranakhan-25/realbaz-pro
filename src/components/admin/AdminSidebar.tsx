@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
@@ -17,6 +18,12 @@ import {
   User,
   Users,
   X,
+  Building2,
+  CreditCard,
+  History,
+  Gauge,
+  FileText,
+  Settings2,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -40,7 +47,7 @@ type AdminNavGroup = {
 
 type AdminMenuItem = AdminNavItem | AdminNavGroup;
 
-const menuGroups: AdminMenuItem[] = [
+export const menuGroups: AdminMenuItem[] = [
   {
     label: "Dashboard",
     href: "/admin/dashboard",
@@ -50,6 +57,16 @@ const menuGroups: AdminMenuItem[] = [
     label: "System Management",
     icon: Boxes,
     children: [
+      {
+        label: "Organization",
+        href: "/admin/orgs", // Organization Management (Org List)
+        icon: Building2,
+      },
+      {
+        label: "Plans & Subscriptions",
+        href: "/admin/plans",
+        icon: CreditCard,
+      },
       {
         label: "Menu Management",
         href: "/admin/menus",
@@ -68,7 +85,7 @@ const menuGroups: AdminMenuItem[] = [
     ],
   },
   {
-    label: "Authentication",
+    label: "Authentication & Access",
     icon: ShieldCheck,
     children: [
       {
@@ -95,6 +112,38 @@ const menuGroups: AdminMenuItem[] = [
         label: "Modules",
         href: "/admin/modules",
         icon: Boxes,
+      },
+    ],
+  },
+  {
+    label: "Reports & Logs",
+    icon: History,
+    children: [
+      {
+        label: "Audit Logs",
+        href: "/admin/audit",
+        icon: History,
+      },
+      {
+        label: "Usage & Limits",
+        href: "/admin/usage",
+        icon: Gauge,
+      },
+    ],
+  },
+  {
+    label: "System Settings",
+    icon: Settings2,
+    children: [
+      {
+        label: "Agreements",
+        href: "/admin/agreements",
+        icon: FileText,
+      },
+      {
+        label: "System Config",
+        href: "/admin/config",
+        icon: Settings2,
       },
     ],
   },

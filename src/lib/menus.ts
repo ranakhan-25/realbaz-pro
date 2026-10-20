@@ -599,7 +599,6 @@ export const MENUS: Record<ModuleKey, MenuNode[]> = {
   crm: parseTree(crm),
   cr: parseTree(cr),
   lams: parseTree(lams),
-
   procurement: parseTree(procurement),
   all: parseTree(all),
 };
