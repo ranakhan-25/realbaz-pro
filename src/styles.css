@@ -1,0 +1,149 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * RealBiz design system — "Graphite Kinetic"
+ * Warm near-black ink, lime signal accent, cool light surfaces.
+ * Default light; `.dark` on <html> flips to dark.
+ */
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-ring-offset-background: var(--background);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-surface: var(--surface);
+  --color-lime: var(--lime);
+  --color-signal: var(--signal);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+
+  --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+}
+
+:root {
+  --radius: 0.5rem;
+
+  --ink: oklch(0.2 0.012 270);
+  --ink-2: oklch(0.25 0.014 270);
+  --surface: oklch(0.97 0.003 260);
+  --lime: oklch(0.9 0.2 120);
+  --signal: oklch(0.58 0.22 262);
+
+  --background: var(--surface);
+  --foreground: var(--ink);
+  --card: oklch(1 0 0);
+  --card-foreground: var(--ink);
+  --popover: oklch(1 0 0);
+  --popover-foreground: var(--ink);
+  --primary: var(--ink);
+  --primary-foreground: var(--surface);
+  --secondary: oklch(0.93 0.004 260);
+  --secondary-foreground: var(--ink);
+  --muted: oklch(0.93 0.004 260);
+  --muted-foreground: oklch(0.5 0.012 270);
+  --accent: var(--lime);
+  --accent-foreground: var(--ink);
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.98 0 0);
+  --border: oklch(0.2 0.012 270 / 10%);
+  --input: oklch(0.2 0.012 270 / 15%);
+  --ring: var(--lime);
+  --sidebar: var(--surface);
+  --sidebar-foreground: var(--ink);
+  --sidebar-border: oklch(0.2 0.012 270 / 10%);
+}
+
+.dark {
+  --ink: oklch(0.97 0.003 260);
+  --ink-2: oklch(0.21 0.012 270);
+  --surface: oklch(0.15 0.01 270);
+
+  --background: var(--surface);
+  --foreground: var(--ink);
+  --card: oklch(0.2 0.012 270);
+  --card-foreground: var(--ink);
+  --popover: oklch(0.2 0.012 270);
+  --popover-foreground: var(--ink);
+  --primary: var(--lime);
+  --primary-foreground: oklch(0.2 0.012 270);
+  --secondary: oklch(0.24 0.012 270);
+  --secondary-foreground: var(--ink);
+  --muted: oklch(0.24 0.012 270);
+  --muted-foreground: oklch(0.7 0.01 270);
+  --accent: var(--lime);
+  --accent-foreground: oklch(0.2 0.012 270);
+  --destructive: oklch(0.704 0.191 22.216);
+  --destructive-foreground: oklch(0.98 0 0);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: var(--lime);
+  --sidebar: oklch(0.17 0.01 270);
+  --sidebar-foreground: var(--ink);
+  --sidebar-border: oklch(1 0 0 / 10%);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+  html {
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+  }
+}
+
+/* Kinetic accent underline used in nav */
+@utility nav-active {
+  text-decoration-line: underline;
+  text-decoration-color: var(--color-accent);
+  text-decoration-thickness: 4px;
+  text-underline-offset: 8px;
+}
+
+/* Skewed lime label chip */
+@utility chip-kinetic {
+  display: inline-block;
+  transform: skewX(-6deg);
+  background: var(--color-accent);
+  color: var(--color-accent-foreground);
+  font-weight: 700;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+}

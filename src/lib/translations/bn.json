@@ -1,0 +1,18 @@
+{
+  "nav": {
+    "home": "হোম",
+    "features": "ফিচারস",
+    "pricing": "প্রাইসিং",
+    "about": "আমাদের সম্পর্কে",
+    "contact": "যোগাযোগ",
+    "login": "লগইন"
+  },
+  "language": {
+    "english": "ইংরেজি",
+    "bangla": "বাংলা"
+  },
+  "theme": {
+    "light": "আলো",
+    "dark": "অন্ধকার"
+  }
+}
