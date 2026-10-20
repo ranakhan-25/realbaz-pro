@@ -147,7 +147,9 @@ export function Sidebar({ module, activePath, open, onClose, filter }: Props) {
           <li key={n.path}>
             <Link
               href={
-                n.path
+                n.slug === "dashboard"
+                  ? `/dashboard/${module}`
+                  : n.path
                   ? `/dashboard/${module}/${n.path}`
                   : `/dashboard/${module}`
               }

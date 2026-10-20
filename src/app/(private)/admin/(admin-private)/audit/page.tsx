@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable prettier/prettier */
+/* eslint-disable @typescript-eslint/no-explicit-any *//* eslint-disable prettier/prettier */
 "use client";
 
 import { useState, useEffect, useMemo } from "react";

@@ -25,7 +25,7 @@ import {
   Briefcase,
 } from "lucide-react";
 
-// ডামি ডেটা (নতুন ফিল্ডসহ)
+// ডামি ডেটা
 const DUMMY_ORGS = [
   {
     uuid: "1",
@@ -206,7 +206,7 @@ export default function OrganizationManagementPage() {
   }, [searchQuery, statusFilter]);
 
   return (
-    <div className="min-h-screen bg-[#fafafa] font-sans">
+    <div className="min-h-screen bg-[#fafafa] font-sans p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
@@ -326,7 +326,7 @@ export default function OrganizationManagementPage() {
                               {org.name}
                             </span>
                             <span className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
-                              <Globe className="h-3 w-3" />
+                              <Globe className="h-3 w-3" />{" "}
                               {org.website || org.slug}
                             </span>
                           </div>
@@ -438,6 +438,7 @@ export default function OrganizationManagementPage() {
                 <X className="h-5 w-5" />
               </button>
             </div>
+
             <div className="p-6 overflow-y-auto">
               <form
                 id="create-org-form"
@@ -652,7 +653,7 @@ export default function OrganizationManagementPage() {
                 {selectedOrg.name}
               </h2>
               <p className="text-sm text-gray-500 flex items-center gap-1 mt-1">
-                <Globe className="h-4 w-4" /> {selectedOrg.website}
+                <Globe className="h-4 w-4" /> {selectedOrg.website || "N/A"}
               </p>
 
               <div className="mt-6 grid grid-cols-2 gap-3 bg-gray-50 p-4 rounded-xl border border-gray-100">
@@ -669,7 +670,7 @@ export default function OrganizationManagementPage() {
                     Billing Email
                   </span>
                   <span className="text-sm font-medium text-gray-900">
-                    {selectedOrg.billing_email}
+                    {selectedOrg.billing_email || "N/A"}
                   </span>
                 </div>
                 <div className="flex flex-col">
@@ -693,7 +694,7 @@ export default function OrganizationManagementPage() {
                     Tax ID
                   </span>
                   <span className="text-sm font-mono font-medium text-gray-900">
-                    {selectedOrg.tax_id}
+                    {selectedOrg.tax_id || "N/A"}
                   </span>
                 </div>
                 <div className="flex flex-col">

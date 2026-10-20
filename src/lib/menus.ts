@@ -12,16 +12,17 @@ export type MenuNode = {
 };
 
 export type ModuleKey =
-  "project" | "inventory" | "accounts" | "hrm" | "crm" | "cr" | "lams" | "procurement" | "all";
+   "lams" | "inventory" | "accounts" | "hrm" | "crm" | "cr" |  "project" | "csm"| "procurement" | "all";
 
 export const MODULES: { key: ModuleKey; label: string }[] = [
+  { key: "lams", label: "LAMS" },
   { key: "project", label: "Project" },
+  { key: "csm", label: "CSM" },
   { key: "inventory", label: "Inventory" },
   { key: "accounts", label: "Accounts" },
   { key: "hrm", label: "HRM" },
   { key: "crm", label: "CRM" },
   { key: "cr", label: "Credit Realisation (CR)" },
-  { key: "lams", label: "LAMS" },
   { key: "procurement", label: "Procurement" },
   { key: "all", label: "All" },
 ];
@@ -66,102 +67,41 @@ function parseTree(text: string): MenuNode[] {
   return root;
 }
 
-const project = `
-dashboard
-projects
-  project-type
-  project
-  site
-  report
+// const project = `
+// dashboard
+// projects
+//   project-type
+//   project
+//   site
+//   report
 
-    project-details 
-    at_a_glance_project_summary_report
-    project-summary-report
-    project-financial-report
-    project-progress-report 
-    project-wise-income-statement
-    site-wise-income-statement
-contract
-  customer-accounts
-  supplier-accounts
-  labour-work-bank
-  contractor
-investments
-  investor
-  configuration
-share-project
-  assign-share
-  share-report
-  share-collection-report
-  penalty-report
-  share-holders-point-report
-  project-share-configuration
-requisition
-  material-requisition
-  service-work-requisition
-  fund-requisition
-  fund-requisition-report
-billing
-  configuration
-    category
-    sub-category
-    bill-item
-    service-work-name
-    boq-title
-  bill-invoice
-  contractor-bill
-  labour-work-bill
-  work-order
-  contractor-work-order
-  period-billing
-  adjustment-billing
-  quote
-  labour-work-bill-report
-flat-land
-  flat
-  land
-    road
-    block
-    land-details
-  booking
-  sale-offer
-  flat-land-sale
-  flat-land-sale-report
-  sale-collection-report
-  plot-distribution-report
-  aging-report
-  installment-report
-document
-`;
-
-const inventory = `
-// contracts
+//     project-details 
+//     at_a_glance_project_summary_report
+//     project-summary-report
+//     project-financial-report
+//     project-progress-report 
+//     project-wise-income-statement
+//     site-wise-income-statement
+// contract
+//   customer-accounts
 //   supplier-accounts
-// products
-//   categories
-//   sub-categories
-//   brands
-//   units
-//   item-entry
-// purchase
-//   add-purchase
-//   purchase-list
-// sales
-// adjustment
-//   material-usage
-//   stock-transfer
-// material-requisition
-// reports
-//   purchase-details
-//   purchase-order-receive-details
-//   stock-report
-//   item-history-report
-//   item-wise-supplier-ledger
-//   material-usage-report
-//   material-comparison-report
-// `;
-
-const billingBlock = `
+//   labour-work-bank
+//   contractor
+// investments
+//   investor
+//   configuration
+// share-project
+//   assign-share
+//   share-report
+//   share-collection-report
+//   penalty-report
+//   share-holders-point-report
+//   project-share-configuration
+// requisition
+//   material-requisition
+//   service-work-requisition
+//   fund-requisition
+//   fund-requisition-report
 // billing
 //   configuration
 //     category
@@ -177,7 +117,7 @@ const billingBlock = `
 //   period-billing
 //   adjustment-billing
 //   quote
-//   labour-worker-bill-report
+//   labour-work-bill-report
 // flat-land
 //   flat
 //   land
@@ -192,61 +132,204 @@ const billingBlock = `
 //   plot-distribution-report
 //   aging-report
 //   installment-report
+// document
+// `; 
+
+// const project = `
+// dashboard
+// projects
+//   project-master
+//   project-type
+//   project-site
+//   building
+//   floor
+//   unit-plot
+//   project-party
+//   project-agreement
+//   project-milestone
+//   project-task
+//   project-budget
+//   project-cost
+//   project-progress
+//   project-document
+//   project-control
+//   project-dashboard
 // `;
+const lams = `
+land-lead-management
+landowner-management
+land-information-and-records
+land-valuation
+land-legal-verification
+land-due-diligence
+land-negotiation
+acquisition-workflow
+acquisition-approval
+landowner-settlement
+acquisition-documents
+acquisition-status-and-reports
+`;
+
+
+const project = `
+dashboard
+projects
+  project-master
+  project-type
+  project-site
+  building
+  floor
+  unit-plot
+  project-party
+  project-agreement
+  project-milestone
+  project-task
+  project-budget
+  project-cost
+  project-progress
+  project-document
+  project-control
+ 
+`; 
+
+
+const csm = `  
+  dashboard
+  work-packages
+  boq
+  boq-sections-and-items
+  boq-revisions
+  daily-site-reports
+  work-progress
+  progress-measurement
+  certified-quantity
+  contractor-management
+  subcontractor-management
+  labour-management
+  material-consumption
+
+  quality-inspection
+  safety-inspection
+  site-issues
+  delay-tracking
+ 
+`; // site-documents 
+    //  site-equipment
+
+
+const inventory = `
+contracts
+  supplier-accounts
+products
+  categories
+  sub-categories
+  brands
+  units
+  item-entry
+purchase
+  add-purchase
+  purchase-list
+sales
+adjustment
+  material-usage
+  stock-transfer
+material-requisition
+reports
+  purchase-details
+  purchase-order-receive-details
+  stock-report
+  item-history-report
+  item-wise-supplier-ledger
+  material-usage-report
+  material-comparison-report
+`;
+
+const billingBlock = `
+billing
+  configuration
+    category
+    sub-category
+    bill-item
+    service-work-name
+    boq-title
+  bill-invoice
+  contractor-bill
+  labour-work-bill
+  work-order
+  contractor-work-order
+  period-billing
+  adjustment-billing
+  quote
+  labour-worker-bill-report
+flat-land
+  flat
+  land
+    road
+    block
+    land-details
+  booking
+  sale-offer
+  flat-land-sale
+  flat-land-sale-report
+  sale-collection-report
+  plot-distribution-report
+  aging-report
+  installment-report
+`;
 
 const accounts = `
-// dashboard
+dashboard
 
-// contract
-//   customer-account
-//   supplier-account
-//   labour-worker-contractor
-// employee
-//   department
-//   designation
-//   shift
-//   section
-//   unit
-//   employee-list
-//   employee-hierarchy
-// configuration
-//   chart-of-group
-//   chart-of-accounts
-// voucher
-//   expense
-//   receipt-voucher
-//   payment-voucher
-//   journal-voucher
-//   contra-voucher
-// bank-reconciliation
-//   bank-reconciliation-statement
-//   list-of-cheque-range
-//   list-of-cheque
-// ${billingBlock}
-// assets
-//   asset-list
-//   item-empty
-// reports
-//   payable-report
-//   expense-report
-//   receipt-report
-//   receivable-report
-//   day-book
-//   receive-payment-statement
-//   receive-and-payment-summary
-//   cash-bank-books
-//   general-ledger
-//   income_statement
-//   cash-flow-statement
-//   fund-flow-summary
-//   trial_balance_summary
-//   balance_sheet_summary
-//   profit-loss-comprehensive-income
-//   statement-of-financial-position
-//   statement-of-changes-equity
-//   property-plant-equipment
-//   budget-vs-actual-expenses-vs-collection-report
-// `;
+contract
+  customer-account
+  supplier-account
+  labour-worker-contractor
+employee
+  department
+  designation
+  shift
+  section
+  unit
+  employee-list
+  employee-hierarchy
+configuration
+  chart-of-group
+  chart-of-accounts
+voucher
+  expense
+  receipt-voucher
+  payment-voucher
+  journal-voucher
+  contra-voucher
+bank-reconciliation
+  bank-reconciliation-statement
+  list-of-cheque-range
+  list-of-cheque
+${billingBlock}
+assets
+  asset-list
+  item-empty
+reports
+  payable-report
+  expense-report
+  receipt-report
+  receivable-report
+  day-book
+  receive-payment-statement
+  receive-and-payment-summary
+  cash-bank-books
+  general-ledger
+  income_statement
+  cash-flow-statement
+  fund-flow-summary
+  trial_balance_summary
+  balance_sheet_summary
+  profit-loss-comprehensive-income
+  statement-of-financial-position
+  statement-of-changes-equity
+  property-plant-equipment
+  budget-vs-actual-expenses-vs-collection-report
+`;
 
 const hrm = `
 dashboard
@@ -300,93 +383,86 @@ kpi
 `;
 
 const cr = `
-// dashboard
-// receipt-voucher
-// overdue-list
-// reports
-//   realization-summary-report
-//   sale-collection-report
-//   aging-report
-//   installment-report
-// `;
+dashboard
+receipt-voucher
+overdue-list
+reports
+  realization-summary-report
+  sale-collection-report
+  aging-report
+  installment-report
+`;
 
-const lams = `
-// dashboard
-// land-owners
-// acquisition-leads
-// negotiation-process
-// legal-documents
-// follow-up
-// `;
+
 
 const crm = `
-// dashboard
-// configuration
-//   communication-status
-//   teams
-//   lead-category
-//   campaign
-//   profession
-//   lead-source
-//   offers
-//   area
-//   lead-stage
-//   project
-//   price-range
-// lead
-//   lead-list
-//   junk-lead
-//   transfer-history
-// call-center
-//   follow-up
-//   call-report
-//   call-report-details
-//   call-assign-history
-// task-visit
-//   task-visit-list
-//   deal-negotiation-activity
-//   task-visit-summary-report
-//   task-visit-details-report
-// property
-//   flat
-//   land
-//   booking
-//   sale-offer
-// reports
-//   user-wise-report
-//   user-active-report
-//   sales-pipeline-funnel-report
-//   team-reports
-//   interested-flat-land-requirements
-//   sales-probability
-//   flat-land-sale-report
-//   missed-followup-visit-summary
-//   deal-negotiation-reports
-// kpi
-//   employee-kpi-setting
-//   reports
-// `;
+dashboard
+configuration
+  communication-status
+  teams
+  lead-category
+  campaign
+  profession
+  lead-source
+  offers
+  area
+  lead-stage
+  project
+  price-range
+lead
+  lead-list
+  junk-lead
+  transfer-history
+call-center
+  follow-up
+  call-report
+  call-report-details
+  call-assign-history
+task-visit
+  task-visit-list
+  deal-negotiation-activity
+  task-visit-summary-report
+  task-visit-details-report
+property
+  flat
+  land
+  booking
+  sale-offer
+reports
+  user-wise-report
+  user-active-report
+  sales-pipeline-funnel-report
+  team-reports
+  interested-flat-land-requirements
+  sales-probability
+  flat-land-sale-report
+  missed-followup-visit-summary
+  deal-negotiation-reports
+kpi
+  employee-kpi-setting
+  reports
+`;
 
 const procurement = `
-// dashboard
-// requisition
-//   material-requisition
-//   asset-requisition
-// rfq
-//   request-for-quotation
-//   asset-request-for-quotation
-// purchase-order
-//   purchase-order-list
-//   asset-purchase-order-list
-// grn
-//   goods-receipt-note
-//   asset-goods-receipt-note
-// purchase-bill
-//   purchase-bill-invoice
-//   asset-purchase-bill-invoice
-// reports
-//   grn-vs-invoice-report
-// `;
+dashboard
+requisition
+  material-requisition
+  asset-requisition
+rfq
+  request-for-quotation
+  asset-request-for-quotation
+purchase-order
+  purchase-order-list
+  asset-purchase-order-list
+grn
+  goods-receipt-note
+  asset-goods-receipt-note
+purchase-bill
+  purchase-bill-invoice
+  asset-purchase-bill-invoice
+reports
+  grn-vs-invoice-report
+`;
 
 const all = `
 project
@@ -516,6 +592,7 @@ crm
 
 export const MENUS: Record<ModuleKey, MenuNode[]> = {
   project: parseTree(project),
+  csm:parseTree(csm),
   inventory: parseTree(inventory),
   accounts: parseTree(accounts),
   hrm: parseTree(hrm),
